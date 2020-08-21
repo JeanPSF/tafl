@@ -200,29 +200,33 @@ function App() {
 		if (board) {
 			let isDead = true;
 			if (
-				board[kingCoord.x - 1][kingCoord.y].status ===
-					board[kingCoord.x][kingCoord.y].status ||
+				(kingCoord.x > 0 &&
+					board[kingCoord.x - 1][kingCoord.y].status ===
+						board[kingCoord.x][kingCoord.y].status) ||
 				board[kingCoord.x - 1][kingCoord.y].status === SquareStatus.Free
 			) {
 				isDead = false;
 			}
 			if (
-				board[kingCoord.x + 1][kingCoord.y].status ===
-					board[kingCoord.x][kingCoord.y].status ||
+				(kingCoord.x < 12 &&
+					board[kingCoord.x + 1][kingCoord.y].status ===
+						board[kingCoord.x][kingCoord.y].status) ||
 				board[kingCoord.x - 1][kingCoord.y].status === SquareStatus.Free
 			) {
 				isDead = false;
 			}
 			if (
-				board[kingCoord.x][kingCoord.y - 1].status ===
-					board[kingCoord.x][kingCoord.y].status ||
+				(kingCoord.y > 0 &&
+					board[kingCoord.x][kingCoord.y - 1].status ===
+						board[kingCoord.x][kingCoord.y].status) ||
 				board[kingCoord.x - 1][kingCoord.y].status === SquareStatus.Free
 			) {
 				isDead = false;
 			}
 			if (
-				board[kingCoord.x][kingCoord.y + 1].status ===
-					board[kingCoord.x][kingCoord.y].status ||
+				(kingCoord.y < 12 &&
+					board[kingCoord.x][kingCoord.y + 1].status ===
+						board[kingCoord.x][kingCoord.y].status) ||
 				board[kingCoord.x - 1][kingCoord.y].status === SquareStatus.Free
 			) {
 				isDead = false;
@@ -234,16 +238,16 @@ function App() {
 
 	function isAttackingKing(x: number, y: number) {
 		if (board) {
-			if (board[x - 1][y].isKing) {
+			if (x > 0 && board[x - 1][y].isKing) {
 				return { x: x - 1, y: y };
 			}
-			if (board[x + 1][y].isKing) {
+			if (x < 12 && board[x + 1][y].isKing) {
 				return { x: x + 1, y: y };
 			}
-			if (board[x][y - 1].isKing) {
+			if (y > 0 && board[x][y - 1].isKing) {
 				return { x: x, y: y - 1 };
 			}
-			if (board[x][y + 1].isKing) {
+			if (y < 12 && board[x][y + 1].isKing) {
 				return { x: x, y: y + 1 };
 			}
 		}
