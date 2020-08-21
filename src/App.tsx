@@ -67,8 +67,8 @@ const initialPiecesPosition = [
 	{ x: 8, y: 6, type: SquareStatus.White },
 ];
 type Coordinates = {
-	x: number | null;
-	y: number | null;
+	x: number;
+	y: number;
 };
 export type Selected = {
 	coordinate: Coordinates | null;
@@ -108,7 +108,7 @@ function App() {
 			const row: SquareState[] = [];
 			for (let j = 0; j < size; j++) {
 				row.push({
-					id: i.toString() + j.toString(),
+					id: String.fromCharCode(97 + i) + (j + 1).toString(),
 					status: SquareStatus.Free,
 					x: i,
 					y: j,
@@ -196,6 +196,60 @@ function App() {
 		return false;
 	}
 
+	function isKingDead(kingCoord: Coordinates, lastMove: Coordinates) {
+		if (board) {
+			let isDead = true;
+			if (
+				board[kingCoord.x - 1][kingCoord.y].status ===
+					board[kingCoord.x][kingCoord.y].status ||
+				board[kingCoord.x - 1][kingCoord.y].status === SquareStatus.Free
+			) {
+				isDead = false;
+			}
+			if (
+				board[kingCoord.x + 1][kingCoord.y].status ===
+					board[kingCoord.x][kingCoord.y].status ||
+				board[kingCoord.x - 1][kingCoord.y].status === SquareStatus.Free
+			) {
+				isDead = false;
+			}
+			if (
+				board[kingCoord.x][kingCoord.y - 1].status ===
+					board[kingCoord.x][kingCoord.y].status ||
+				board[kingCoord.x - 1][kingCoord.y].status === SquareStatus.Free
+			) {
+				isDead = false;
+			}
+			if (
+				board[kingCoord.x][kingCoord.y + 1].status ===
+					board[kingCoord.x][kingCoord.y].status ||
+				board[kingCoord.x - 1][kingCoord.y].status === SquareStatus.Free
+			) {
+				isDead = false;
+			}
+			return isDead;
+		}
+		return false;
+	}
+
+	function isAttackingKing(x: number, y: number) {
+		if (board) {
+			if (board[x - 1][y].isKing) {
+				return { x: x - 1, y: y };
+			}
+			if (board[x + 1][y].isKing) {
+				return { x: x + 1, y: y };
+			}
+			if (board[x][y - 1].isKing) {
+				return { x: x, y: y - 1 };
+			}
+			if (board[x][y + 1].isKing) {
+				return { x: x, y: y + 1 };
+			}
+		}
+		return false;
+	}
+
 	function renderSquare(infos: SquareState) {
 		let isEmpty = false;
 		if (infos.status === SquareStatus.Free) {
@@ -206,10 +260,12 @@ function App() {
 			content = (
 				<FontAwesomeIcon
 					icon={infos.isKing ? 'chess-king' : 'chess-pawn'}
-					color={infos.status === SquareStatus.Black ? 'black' : 'white'}
+					color={infos.status === SquareStatus.Black ? 'black' : 'indigo'}
 					size={'2x'}
 				/>
 			);
+		} else {
+			content = <span className={'empty'}>{infos.id}</span>;
 		}
 		const isSelected =
 			infos.x === selectedCoord.coordinate?.x &&
@@ -230,10 +286,21 @@ function App() {
 			}
 		}
 		const isAvailableCSS = isAvailable ? ' available' : '';
+		const isGoal = isCorner(infos.x, infos.y) ? ' goal' : '';
+		const isThrone =
+			infos.x === Math.floor(size / 2) && infos.y === Math.floor(size / 2)
+				? ' throne'
+				: '';
 		return (
 			<button
 				key={infos.id}
-				className={'square' + `${isSelectedCSS}` + `${isAvailableCSS}`}
+				className={
+					'square' +
+					`${isSelectedCSS}` +
+					`${isAvailableCSS}` +
+					`${isGoal}` +
+					`${isThrone}`
+				}
 				onClick={async () => {
 					if (board) {
 						console.log('clicked on square: ', board[infos.x][infos.y]);
@@ -316,59 +383,7 @@ function App() {
 										};
 										//Rules
 										const newInfo = newBoard[infos.x][infos.y];
-										//around bottom
-										if (
-											newInfo.x < 11 &&
-											newBoard[newInfo.x + 1][newInfo.y].status !==
-												SquareStatus.Free &&
-											newBoard[newInfo.x + 1][newInfo.y].status !==
-												newInfo.status &&
-											newBoard[newInfo.x + 2][newInfo.y].status ===
-												newInfo.status
-										) {
-											newBoard[newInfo.x + 1][newInfo.y].status =
-												SquareStatus.Free;
-										}
-										//around top
-										if (
-											newInfo.x > 1 &&
-											newBoard[newInfo.x - 1][newInfo.y].status !==
-												SquareStatus.Free &&
-											newBoard[newInfo.x - 1][newInfo.y].status !==
-												newInfo.status &&
-											newBoard[newInfo.x - 2][newInfo.y].status ===
-												newInfo.status
-										) {
-											newBoard[newInfo.x - 1][newInfo.y].status =
-												SquareStatus.Free;
-										}
-										//around left
-										if (
-											newInfo.y > 1 &&
-											newBoard[newInfo.x][newInfo.y - 1].status !==
-												SquareStatus.Free &&
-											newBoard[newInfo.x][newInfo.y - 1].status !==
-												newInfo.status &&
-											newBoard[newInfo.x][newInfo.y - 2].status ===
-												newInfo.status
-										) {
-											newBoard[newInfo.x][newInfo.y - 1].status =
-												SquareStatus.Free;
-										}
-										//around right
-										if (
-											newInfo.y < 11 &&
-											newBoard[newInfo.x][newInfo.y + 1].status !==
-												SquareStatus.Free &&
-											newBoard[newInfo.x][newInfo.y + 1].status !==
-												newInfo.status &&
-											newBoard[newInfo.x][newInfo.y + 2].status ===
-												newInfo.status
-										) {
-											newBoard[newInfo.x][newInfo.y + 1].status =
-												SquareStatus.Free;
-										}
-										//Rules end
+										const isKingNear = isAttackingKing(newInfo.x, newInfo.y);
 										if (
 											newBoard[newInfo.x][newInfo.y].isKing &&
 											isCorner(
@@ -382,6 +397,76 @@ function App() {
 												winner: turn,
 											});
 										}
+										if (
+											isKingNear &&
+											isKingDead(isKingNear, { x: newInfo.x, y: newInfo.y })
+										) {
+											setBoardState({
+												...boardState,
+												active: false,
+												winner: turn,
+											});
+										} else {
+											//around bottom
+											if (
+												newInfo.x < 11 &&
+												newBoard[newInfo.x + 1][newInfo.y].status !==
+													SquareStatus.Free &&
+												newBoard[newInfo.x + 1][newInfo.y].status !==
+													newInfo.status &&
+												!newBoard[newInfo.x + 1][newInfo.y].isKing &&
+												newBoard[newInfo.x + 2][newInfo.y].status ===
+													newInfo.status
+											) {
+												newBoard[newInfo.x + 1][newInfo.y].status =
+													SquareStatus.Free;
+											}
+											//around top
+											if (
+												newInfo.x > 1 &&
+												newBoard[newInfo.x - 1][newInfo.y].status !==
+													SquareStatus.Free &&
+												newBoard[newInfo.x - 1][newInfo.y].status !==
+													newInfo.status &&
+												!newBoard[newInfo.x - 1][newInfo.y].isKing &&
+												newBoard[newInfo.x - 2][newInfo.y].status ===
+													newInfo.status
+											) {
+												newBoard[newInfo.x - 1][newInfo.y].status =
+													SquareStatus.Free;
+											}
+											//around left
+											if (
+												newInfo.y > 1 &&
+												newBoard[newInfo.x][newInfo.y - 1].status !==
+													SquareStatus.Free &&
+												newBoard[newInfo.x][newInfo.y - 1].status !==
+													newInfo.status &&
+												!newBoard[newInfo.x][newInfo.y - 1].isKing &&
+												newBoard[newInfo.x][newInfo.y - 2].status ===
+													newInfo.status
+											) {
+												newBoard[newInfo.x][newInfo.y - 1].status =
+													SquareStatus.Free;
+											}
+											//around right
+											if (
+												newInfo.y < 11 &&
+												newBoard[newInfo.x][newInfo.y + 1].status !==
+													SquareStatus.Free &&
+												newBoard[newInfo.x][newInfo.y + 1].status !==
+													newInfo.status &&
+												!newBoard[newInfo.x][newInfo.y + 1].isKing &&
+												newBoard[newInfo.x][newInfo.y + 2].status ===
+													newInfo.status
+											) {
+												newBoard[newInfo.x][newInfo.y + 1].status =
+													SquareStatus.Free;
+											}
+										}
+
+										//Rules end
+
 										changeTurn();
 										setBoard(newBoard);
 										cleanSelected();
@@ -439,6 +524,7 @@ function App() {
 						{boardState.winner === Turn.Player1 ? 'Player 1' : 'Player 2'}
 					</span>
 				) : null}
+
 				{board ? printBoard() : <span>Carregando tabuleiro.</span>}
 				<button onClick={reset}>reset</button>
 			</div>
