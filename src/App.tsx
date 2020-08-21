@@ -516,17 +516,32 @@ function App() {
 
 	return (
 		<div className="App">
-			<div className="table">
-				<span>Jogador: {turn === Turn.Player1 ? 'Player 1' : 'Player 2'}</span>
-				{!boardState.active ? (
+			<div className="game-component">
+				<div className="melhorias">
+					<span>Melhorias:</span>
+					<span>Explicação das regras: ALTA.</span>
+					<span>Implementar regas relacionadas ao trono: ALTA.</span>
+					<span>Implementar regas de captura utilizando as quinas: ALTA.</span>
+					<span>Impedir que peças normais se movimentem em quinas: ALTA.</span>
+					<span>Implementar regra shieldwall: MEDIA.</span>
+					<span>Feedback visual: MEDIA.</span>
+					<span>Animações de Feedback visual: BAIXA.</span>
+				</div>
+				<div className="table">
 					<span>
-						Vencedor:{' '}
-						{boardState.winner === Turn.Player1 ? 'Player 1' : 'Player 2'}
+						Jogador: {turn === Turn.Player1 ? 'Player 1' : 'Player 2'}
 					</span>
-				) : null}
+					{!boardState.active ? (
+						<span>
+							Vencedor:{' '}
+							{boardState.winner === Turn.Player1 ? 'Player 1' : 'Player 2'}
+						</span>
+					) : null}
 
-				{board ? printBoard() : <span>Carregando tabuleiro.</span>}
-				<button onClick={reset}>reset</button>
+					{board ? printBoard() : <span>Carregando tabuleiro.</span>}
+					<button onClick={reset}>reset</button>
+				</div>
+				<div></div>
 			</div>
 		</div>
 	);

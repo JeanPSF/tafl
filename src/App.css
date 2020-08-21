@@ -6,11 +6,18 @@
   justify-content: center;
 }
 
+.game-component {
+  flex: 1;
+  display: flex;
+  padding: 32px;
+}
+
 .table {
   width: 546px;
   height: 546px;
   display: flex;
   flex-direction: column;
+  padding-left: 32px;
 }
 
 .tableRow {
@@ -42,4 +49,9 @@
 
 .goal {
   background-color: cadetblue;
+}
+
+.melhorias {
+  display: flex;
+  flex-direction: column;
 }
