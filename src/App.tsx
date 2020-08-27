@@ -468,64 +468,182 @@ function App() {
 												winner: turn,
 											});
 										} else {
-											//around bottom
-											if (
-												newInfo.x < 11 &&
-												newBoard[newInfo.x + 1][newInfo.y].status !==
-													SquareStatus.Free &&
-												newBoard[newInfo.x + 1][newInfo.y].status !==
-													newInfo.status &&
-												!newBoard[newInfo.x + 1][newInfo.y].isKing &&
-												newBoard[newInfo.x + 2][newInfo.y].status ===
-													newInfo.status
-											) {
-												newBoard[newInfo.x + 1][newInfo.y].status =
-													SquareStatus.Free;
-											}
-											//around top
-											if (
-												newInfo.x > 1 &&
-												newBoard[newInfo.x - 1][newInfo.y].status !==
-													SquareStatus.Free &&
-												newBoard[newInfo.x - 1][newInfo.y].status !==
-													newInfo.status &&
-												!newBoard[newInfo.x - 1][newInfo.y].isKing &&
-												newBoard[newInfo.x - 2][newInfo.y].status ===
-													newInfo.status
-											) {
-												newBoard[newInfo.x - 1][newInfo.y].status =
-													SquareStatus.Free;
-											}
-											//around left
-											if (
-												newInfo.y > 1 &&
-												newBoard[newInfo.x][newInfo.y - 1].status !==
-													SquareStatus.Free &&
-												newBoard[newInfo.x][newInfo.y - 1].status !==
-													newInfo.status &&
-												!newBoard[newInfo.x][newInfo.y - 1].isKing &&
-												newBoard[newInfo.x][newInfo.y - 2].status ===
-													newInfo.status
-											) {
-												newBoard[newInfo.x][newInfo.y - 1].status =
-													SquareStatus.Free;
-											}
-											//around right
+											//multiple right
 											if (
 												newInfo.y < 11 &&
 												newBoard[newInfo.x][newInfo.y + 1].status !==
 													SquareStatus.Free &&
 												newBoard[newInfo.x][newInfo.y + 1].status !==
 													newInfo.status &&
-												!newBoard[newInfo.x][newInfo.y + 1].isKing &&
-												newBoard[newInfo.x][newInfo.y + 2].status ===
-													newInfo.status
+												newBoard[newInfo.x][newInfo.y + 2].status !==
+													newInfo.status &&
+												newBoard[newInfo.x][newInfo.y + 2].status !==
+													SquareStatus.Free
 											) {
-												newBoard[newInfo.x][newInfo.y + 1].status =
-													SquareStatus.Free;
+												let maxEnemyRange = 2;
+												let isTrap = false; /*O---O*/
+												while (newInfo.y + maxEnemyRange < size) {
+													if (
+														newBoard[newInfo.x][newInfo.y + maxEnemyRange]
+															.status !== SquareStatus.Free &&
+														newBoard[newInfo.x][newInfo.y + maxEnemyRange]
+															.status !== newInfo.status
+													) {
+														maxEnemyRange = maxEnemyRange + 1;
+													} else {
+														if (
+															newBoard[newInfo.x][newInfo.y + maxEnemyRange]
+																.status === newInfo.status
+														) {
+															isTrap = true;
+															break;
+														} else {
+															isTrap = false;
+															break;
+														}
+													}
+												}
+												if (isTrap) {
+													for (let i = 1; i < maxEnemyRange - 1; i++) {
+														if (
+															newBoard[newInfo.x + 1][newInfo.y + i].status ===
+																newInfo.status &&
+															newBoard[newInfo.x - 1][newInfo.y + i].status ===
+																newInfo.status
+														) {
+														} else {
+															isTrap = false;
+															break;
+														}
+													}
+												}
+												if (isTrap) {
+													for (let i = 1; i < maxEnemyRange; i++) {
+														newBoard[newInfo.x][newInfo.y + i].status =
+															SquareStatus.Free;
+													}
+												}
+											}
+											//multiple left
+											if (
+												newInfo.y > 1 &&
+												newBoard[newInfo.x][newInfo.y - 1].status !==
+													SquareStatus.Free &&
+												newBoard[newInfo.x][newInfo.y - 1].status !==
+													newInfo.status &&
+												newBoard[newInfo.x][newInfo.y - 2].status !==
+													newInfo.status &&
+												newBoard[newInfo.x][newInfo.y - 2].status !==
+													SquareStatus.Free
+											) {
+												let maxEnemyRange = 2;
+												let isTrap = false; /*O---O*/
+												while (newInfo.y - maxEnemyRange >= 0) {
+													if (
+														newBoard[newInfo.x][newInfo.y - maxEnemyRange]
+															.status !== SquareStatus.Free &&
+														newBoard[newInfo.x][newInfo.y - maxEnemyRange]
+															.status !== newInfo.status
+													) {
+														maxEnemyRange = maxEnemyRange + 1;
+													} else {
+														if (
+															newBoard[newInfo.x][newInfo.y - maxEnemyRange]
+																.status === newInfo.status
+														) {
+															isTrap = true;
+															break;
+														} else {
+															isTrap = false;
+															break;
+														}
+													}
+												}
+												if (isTrap) {
+													for (let i = 1; i < maxEnemyRange - 1; i++) {
+														if (
+															newBoard[newInfo.x + 1][newInfo.y - i].status ===
+																newInfo.status &&
+															newBoard[newInfo.x - 1][newInfo.y - i].status ===
+																newInfo.status
+														) {
+														} else {
+															console.log(
+																'doesnt have the wall, cancelling trap'
+															);
+															isTrap = false;
+															break;
+														}
+													}
+												}
+												if (isTrap) {
+													for (let i = 1; i < maxEnemyRange; i++) {
+														newBoard[newInfo.x][newInfo.y - i].status =
+															SquareStatus.Free;
+													}
+												}
 											}
 										}
-
+										//around bottom
+										if (
+											newInfo.x < 11 &&
+											newBoard[newInfo.x + 1][newInfo.y].status !==
+												SquareStatus.Free &&
+											newBoard[newInfo.x + 1][newInfo.y].status !==
+												newInfo.status &&
+											!newBoard[newInfo.x + 1][newInfo.y].isKing &&
+											(newBoard[newInfo.x + 2][newInfo.y].status ===
+												newInfo.status ||
+												isCorner(newInfo.x + 2, newInfo.y))
+										) {
+											newBoard[newInfo.x + 1][newInfo.y].status =
+												SquareStatus.Free;
+										}
+										//around top
+										if (
+											newInfo.x > 1 &&
+											newBoard[newInfo.x - 1][newInfo.y].status !==
+												SquareStatus.Free &&
+											newBoard[newInfo.x - 1][newInfo.y].status !==
+												newInfo.status &&
+											!newBoard[newInfo.x - 1][newInfo.y].isKing &&
+											(newBoard[newInfo.x - 2][newInfo.y].status ===
+												newInfo.status ||
+												isCorner(newInfo.x - 2, newInfo.y))
+										) {
+											newBoard[newInfo.x - 1][newInfo.y].status =
+												SquareStatus.Free;
+										}
+										//around left
+										if (
+											newInfo.y > 1 &&
+											newBoard[newInfo.x][newInfo.y - 1].status !==
+												SquareStatus.Free &&
+											newBoard[newInfo.x][newInfo.y - 1].status !==
+												newInfo.status &&
+											!newBoard[newInfo.x][newInfo.y - 1].isKing &&
+											(newBoard[newInfo.x][newInfo.y - 2].status ===
+												newInfo.status ||
+												isCorner(newInfo.x, newInfo.y - 2))
+										) {
+											newBoard[newInfo.x][newInfo.y - 1].status =
+												SquareStatus.Free;
+										}
+										//around right
+										if (
+											newInfo.y < 11 &&
+											newBoard[newInfo.x][newInfo.y + 1].status !==
+												SquareStatus.Free &&
+											newBoard[newInfo.x][newInfo.y + 1].status !==
+												newInfo.status &&
+											!newBoard[newInfo.x][newInfo.y + 1].isKing &&
+											(newBoard[newInfo.x][newInfo.y + 2].status ===
+												newInfo.status ||
+												isCorner(newInfo.x, newInfo.y + 2))
+										) {
+											newBoard[newInfo.x][newInfo.y + 1].status =
+												SquareStatus.Free;
+										}
 										//Rules end
 
 										changeTurn();
@@ -669,6 +787,7 @@ function App() {
 				</div>
 				<div className="game">
 					<div className="table">
+						<span className="textWhite info-text">HNEFATAFL</span>
 						{board ? printBoard() : <span>Carregando tabuleiro.</span>}
 					</div>
 				</div>
