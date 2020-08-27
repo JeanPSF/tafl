@@ -5,21 +5,27 @@ import {
 	faCoffee,
 	faChessKing,
 	faChessPawn,
+	faTimes,
+	faSynagogue,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-library.add(faCoffee, faChessKing, faChessPawn);
+library.add(faCoffee, faChessKing, faChessPawn, faTimes, faSynagogue);
+
+const captura_simples = require('./assets/imgs/captura_simples.JPG');
+const captura_com_quina = require('./assets/imgs/captura_com_quina.JPG');
+const captura_multipla = require('./assets/imgs/captura_multipla.JPG');
+const captura_simple_rei = require('./assets/imgs/captura_simples_rei.JPG');
+const suicidio_desabilitado = require('./assets/imgs/suicidio_desabilitado.JPG');
 
 export enum Turn {
 	Player1,
 	Player2,
 }
-
 export enum SquareStatus {
 	White,
 	Black,
 	Free,
 }
-
 export type SquareState = {
 	id: string;
 	status: SquareStatus;
@@ -82,11 +88,54 @@ export type BoardState = {
 	active: boolean;
 	winner?: Turn;
 };
+interface Rule {
+	id: number;
+	name: string;
+	img: any;
+	desc: string;
+}
 const initialBoardState = { active: true };
+const rules: Rule[] = [
+	{
+		id: 0,
+		name: 'Captura Simples',
+		img: captura_simples,
+		desc:
+			'Uma peça é capturada quando o oponente posiciona duas de suas peças, vertical ou horizontalmente, em uma de suas peças.',
+	},
+	{
+		id: 1,
+		name: 'Captura utilizando o Rei',
+		img: captura_simple_rei,
+		desc: 'O rei pode ser utilizado para realizar uma captura.',
+	},
+	{
+		id: 2,
+		name: 'Suicidio',
+		img: suicidio_desabilitado,
+		desc:
+			'Não é possível cometer suicidio, colocando sua peça entre dusa peças do oponente. Apesar do movimento ser possível, sua peça continua em campo.',
+	},
+	{
+		id: 3,
+		name: 'Captura utilizando os cantos do tabuleiro.',
+		img: captura_com_quina,
+		desc:
+			'Os cantos do tabuleiro são considerados peças inimigas para ambos os jogadores, e podem ser utilizados para realizar uma captura.',
+	},
+	{
+		id: 4,
+		name: 'Captura múltipla',
+		img: captura_multipla,
+		desc:
+			'Quando uma peça é posicionada de forma a capturar mais de 1 peça do oponente, todas as peças s ão capturadas.',
+	},
+];
 function App() {
 	const size = 13;
 	const [board, setBoard] = useState<SquareState[][] | undefined>();
 	const [turn, setTurn] = useState<Turn>(Turn.Player1);
+	const [selectedRule, setSelectedRule] = useState<number>();
 	const [selectedCoord, setSelectedCoord] = useState<Selected>(clearSelected);
 	const [boardState, setBoardState] = useState<BoardState>(initialBoardState);
 	useEffect(() => {
@@ -94,14 +143,12 @@ function App() {
 			initialize();
 		}
 	}, []);
-
 	const reset = () => {
 		initialize();
 		setTurn(Turn.Player1);
 		setSelectedCoord(clearSelected);
 		setBoardState(initialBoardState);
 	};
-
 	const initialize = () => {
 		const board: SquareState[][] = [];
 		for (let i = 0; i < size; i++) {
@@ -130,7 +177,6 @@ function App() {
 		);
 		setBoard(board);
 	};
-
 	function cleanSelected() {
 		setSelectedCoord({
 			coordinate: null,
@@ -179,7 +225,6 @@ function App() {
 		}
 		return availableCoords;
 	};
-
 	function isCorner(x: number, y: number): boolean {
 		if (x === 0 && y === 0) {
 			return true;
@@ -195,7 +240,6 @@ function App() {
 		}
 		return false;
 	}
-
 	function isKingDead(kingCoord: Coordinates, lastMove: Coordinates) {
 		if (board) {
 			let isDead = true;
@@ -235,7 +279,6 @@ function App() {
 		}
 		return false;
 	}
-
 	function isAttackingKing(x: number, y: number) {
 		if (board) {
 			if (x > 0 && board[x - 1][y].isKing) {
@@ -253,7 +296,6 @@ function App() {
 		}
 		return false;
 	}
-
 	function renderSquare(infos: SquareState) {
 		let isEmpty = false;
 		if (infos.status === SquareStatus.Free) {
@@ -264,12 +306,17 @@ function App() {
 			content = (
 				<FontAwesomeIcon
 					icon={infos.isKing ? 'chess-king' : 'chess-pawn'}
-					color={infos.status === SquareStatus.Black ? 'black' : 'indigo'}
+					color={
+						infos.status === SquareStatus.Black ? 'black' : 'cornflowerblue'
+					}
 					size={'2x'}
+					className="over"
 				/>
 			);
 		} else {
-			content = <span className={'empty'}>{infos.id}</span>;
+			content = (
+				<span className={'over textBlue'}>{infos.id.toUpperCase()}</span>
+			);
 		}
 		const isSelected =
 			infos.x === selectedCoord.coordinate?.x &&
@@ -298,13 +345,7 @@ function App() {
 		return (
 			<button
 				key={infos.id}
-				className={
-					'square' +
-					`${isSelectedCSS}` +
-					`${isAvailableCSS}` +
-					`${isGoal}` +
-					`${isThrone}`
-				}
+				className={'square' + `${isSelectedCSS}` + `${isAvailableCSS}`}
 				onClick={async () => {
 					if (board) {
 						console.log('clicked on square: ', board[infos.x][infos.y]);
@@ -359,13 +400,29 @@ function App() {
 								} else {
 									//console.log('Starting move piece logic!');
 									// is the desired place available?
+									const corner = isCorner(infos.x, infos.y);
+									const movingKing =
+										board &&
+										board[selectedCoord?.coordinate?.x][
+											selectedCoord?.coordinate?.y
+										].isKing
+											? true
+											: false;
+									let allowCorner = true;
+									if (corner && !movingKing) {
+										alert(
+											'Não é possível movimentar as peças, com excessão do rei, para os cantos do tabuleiro.'
+										);
+										allowCorner = false;
+									}
 									if (
 										board &&
 										isAvailable &&
 										(selectedCoord?.coordinate?.x ||
 											selectedCoord?.coordinate?.x === 0) &&
 										(selectedCoord?.coordinate?.y ||
-											selectedCoord?.coordinate?.y === 0)
+											selectedCoord?.coordinate?.y === 0) &&
+										allowCorner
 									) {
 										//move
 										let newBoard = board.map((row) => row.slice());
@@ -495,11 +552,28 @@ function App() {
 					}
 				}}
 			>
+				{isGoal ? (
+					<div className="bgIcon">
+						<div className="bgIconConfig">
+							<FontAwesomeIcon icon={'times'} color={'black'} size={'3x'} />
+						</div>
+					</div>
+				) : (
+					<></>
+				)}
+				{isThrone ? (
+					<div className="bgIcon">
+						<div className="bgIconConfig">
+							<FontAwesomeIcon icon={'synagogue'} color={'black'} size={'2x'} />
+						</div>
+					</div>
+				) : (
+					<></>
+				)}
 				{content}
 			</button>
 		);
 	}
-
 	function printBoard() {
 		const boardToPrint = [];
 		for (let i = 0; i < size; i++) {
@@ -517,38 +591,75 @@ function App() {
 		}
 		return boardToPrint;
 	}
-
+	function renderRule(rule: Rule) {
+		return (
+			<div className="ruleDesc">
+				<span className="textWhite">{rule.desc}</span>
+				<img src={rule.img} className="img" />
+			</div>
+		);
+	}
+	function renderRegras() {
+		const regras = (rules || []).map((rule: Rule) => {
+			return (
+				<div>
+					<button
+						className="menuOption"
+						onClick={() => {
+							if (selectedRule === rule.id) {
+								setSelectedRule(undefined);
+							} else {
+								setSelectedRule(rule.id);
+							}
+						}}
+					>
+						{rule.name}
+					</button>
+					{selectedRule === rule.id ? renderRule(rule) : <></>}
+				</div>
+			);
+		});
+		regras.unshift(<div className="rulesTitle">REGRAS</div>);
+		return regras;
+	}
+	function renderInstrucoes() {
+		return (
+			<div className="game-instructions">
+				<span className="textWhite info-text">
+					Turno atual do jogador:{' '}
+					{turn === Turn.Player1 ? 'Player 1' : 'Player 2'}
+				</span>
+				<button className="resetButton" onClick={reset}>
+					Reiniar o tabuleiro.
+				</button>
+				{!boardState.active ? (
+					<span className="textWhite">
+						Vencedor:{' '}
+						{boardState.winner === Turn.Player1 ? 'Player 1' : 'Player 2'}
+					</span>
+				) : null}
+			</div>
+		);
+	}
 	return (
 		<div className="App">
 			<div className="game-component">
-				<div className="melhorias">
+				<div className="instrucoes">
+					{renderInstrucoes()}
 					<span>Melhorias:</span>
-					<span>Explicação das regras: ALTA.</span>
 					<span>Implementar regas relacionadas ao trono: ALTA.</span>
 					<span>Implementar regas de captura utilizando as quinas: ALTA.</span>
-					<span>Impedir que peças normais se movimentem em quinas: ALTA.</span>
 					<span>Implementar regra shieldwall: MEDIA.</span>
-					<span>Feedback visual: MEDIA.</span>
 					<span>Animações de Feedback visual: BAIXA.</span>
 				</div>
-				<div className="table">
-					<span>
-						Jogador: {turn === Turn.Player1 ? 'Player 1' : 'Player 2'}
-					</span>
-					{!boardState.active ? (
-						<span>
-							Vencedor:{' '}
-							{boardState.winner === Turn.Player1 ? 'Player 1' : 'Player 2'}
-						</span>
-					) : null}
-
-					{board ? printBoard() : <span>Carregando tabuleiro.</span>}
-					<button onClick={reset}>reset</button>
+				<div className="game">
+					<div className="table">
+						{board ? printBoard() : <span>Carregando tabuleiro.</span>}
+					</div>
 				</div>
-				<div></div>
+				<div className="regras">{renderRegras()}</div>
 			</div>
 		</div>
 	);
 }
-
 export default App;
