@@ -638,6 +638,21 @@ function App() {
 						{boardState.winner === Turn.Player1 ? 'Player 1' : 'Player 2'}
 					</span>
 				) : null}
+				<div className="goals">
+					<span className="info-text textWhite">OBJETIVOS</span>
+					<div className="goals-description">
+						<div className="goal-description">
+							<span className="info-text textWhite">Brancas: </span>
+							<span className="commom-text textWhite">
+								Levar o rei a um dos 4 cantos do tabuleiro.
+							</span>
+						</div>
+						<div className="goal-description">
+							<span className="info-text textWhite">Pretas: </span>
+							<span className="commom-text textWhite">Capturar o rei.</span>
+						</div>
+					</div>
+				</div>
 			</div>
 		);
 	}

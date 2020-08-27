@@ -92,7 +92,6 @@ button {
   display: flex;
   flex-direction: column;
   padding: 8px 0px 8px 0px;
-
 }
 
 .rulesTitle {
@@ -143,6 +142,11 @@ button {
   font-weight: 700;
 }
 
+.commom-text {
+  font-size: 18px;
+  font-weight: 500;
+}
+
 .info-text {
   font-size: 18px;
   font-weight: 700;
@@ -152,4 +156,13 @@ button {
   display: flex;
   flex-direction: column;
   padding: 16px;
+}
+
+.goals-description {}
+
+.goals {
+  padding: 8px 0px 8px 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
