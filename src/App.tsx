@@ -306,16 +306,14 @@ function App() {
 			content = (
 				<FontAwesomeIcon
 					icon={infos.isKing ? 'chess-king' : 'chess-pawn'}
-					color={
-						infos.status === SquareStatus.Black ? 'black' : 'cornflowerblue'
-					}
+					color={infos.status === SquareStatus.Black ? 'black' : 'white'}
 					size={'2x'}
 					className="over"
 				/>
 			);
 		} else {
 			content = (
-				<span className={'over textBlue'}>{infos.id.toUpperCase()}</span>
+				<span className={'over textWhite'}>{infos.id.toUpperCase()}</span>
 			);
 		}
 		const isSelected =
@@ -771,20 +769,32 @@ function App() {
 						</div>
 					</div>
 				</div>
+				<span className="textWhite info-text">Modificações:</span>
+				<span className="textWhite commom-text">
+					No jogo original, os peões pretos não podem subir no trono, e caso o
+					rei saia, o trono pode ser utilizado como uma peça inimiga, assim como
+					os cantos do tabuleiro.
+				</span>
+				<span className="textWhite commom-text">
+					Essas regras se davam para simular uma emboscada ao rei, entretanto,
+					considerando a já desvantagem de quantidade de peças das brancas,
+					essas regras foram removidas.
+				</span>
+				<span className="textWhite commom-text">
+					Espera-se com essa modificação que o rei das brancas possa ser mais
+					ativo, diminuindo a desvantagem em quantidade de peças.
+				</span>
+				<span className="textWhite commom-text">
+					Para compensar a maior ação do rei, o posicionamento inicial padrão
+					foi modificado, dando assim vantagem posicional as pretas.
+				</span>
 			</div>
 		);
 	}
 	return (
 		<div className="App">
 			<div className="game-component">
-				<div className="instrucoes">
-					{renderInstrucoes()}
-					<span>Melhorias:</span>
-					<span>Implementar regas relacionadas ao trono: ALTA.</span>
-					<span>Implementar regas de captura utilizando as quinas: ALTA.</span>
-					<span>Implementar regra shieldwall: MEDIA.</span>
-					<span>Animações de Feedback visual: BAIXA.</span>
-				</div>
+				<div className="instrucoes">{renderInstrucoes()}</div>
 				<div className="game">
 					<div className="table">
 						<span className="textWhite info-text">HNEFATAFL</span>
